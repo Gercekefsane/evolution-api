@@ -16,11 +16,6 @@ services:
       - .env
     expose:
       - 8080
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
 
   redis:
     image: redis:latest
@@ -33,14 +28,6 @@ services:
       - evolution_redis:/data
     ports:
       - "56379:6379"  # dış 56379, iç 6379
-    expose:
-      - 6379
-    restart: always
-    healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
 
   postgres:
     container_name: postgres
@@ -48,7 +35,7 @@ services:
     networks:
       - evolution-net
     command: ["postgres", "-c", "max_connections=1000", "-c", "listen_addresses=*"]
-    restart: unless-stopped
+    restart: always
     ports:
       - "55432:5432"  # dış 55432, iç 5432
     environment:
@@ -60,11 +47,6 @@ services:
       - postgres_data:/var/lib/postgresql/data
     expose:
       - 5432
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U user"]
-      interval: 30s
-      timeout: 10s
-      retries: 5
 
 volumes:
   evolution_instances:
