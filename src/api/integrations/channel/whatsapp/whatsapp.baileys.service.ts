@@ -1581,6 +1581,21 @@ export class BaileysStartupService extends ChannelStartupService {
     },
   };
 
+  // Utility function to convert @lid JIDs to @s.whatsapp.net format in presence update payload
+  private processPresenceUpdatePayload(payload: any) {
+    if (payload && payload.id && typeof payload.id === 'string') {
+      // Convert @lid format to @s.whatsapp.net format
+      if (payload.id.includes('@lid')) {
+        const numberPart = payload.id.split('@')[0];
+        return {
+          ...payload,
+          id: `${numberPart}@s.whatsapp.net`
+        };
+      }
+    }
+    return payload;
+  }
+
   private eventHandler() {
     this.client.ev.process(async (events) => {
       if (!this.endSession) {
@@ -1650,7 +1665,10 @@ export class BaileysStartupService extends ChannelStartupService {
             return;
           }
 
-          this.sendDataWebhook(Events.PRESENCE_UPDATE, payload);
+          // Extract only number from JID for presence update
+          const processedPayload = this.processPresenceUpdatePayload(payload);
+
+          this.sendDataWebhook(Events.PRESENCE_UPDATE, processedPayload);
         }
 
         if (!settings?.groupsIgnore) {
